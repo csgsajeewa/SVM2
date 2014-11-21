@@ -46,8 +46,8 @@ public class SVM2 {
 
     public void testCrossValidataion() throws Exception {
 
-        //save training data to file, only call if filter parameters have been changed
-             saveTrainingDataToFile();
+//        save training data to file, only call if filter parameters have been changed
+        saveTrainingDataToFile();
 
 //        LibSVM --> initialize the model and set SVM type and kernal type
         LibSVM svm = new LibSVM();
@@ -55,11 +55,9 @@ public class SVM2 {
         svm.setOptions(weka.core.Utils.splitOptions(svmOptions));
         System.out.println("SVM Type and Keranl Type= " + svm.getSVMType() + svm.getKernelType());//1,3 best result 81%
         svm.setNormalize(true);
-        //LibLINEAR ---> 
-       // LibLINEARUpdated libLINEAR = new LibLINEARUpdated();
-       // System.out.println("SVM Type and Keranl Type= this is linear  " + libLINEAR.getSVMType());
 
- //       load training data from .arff file
+
+//        load training data from .arff file
         ConverterUtils.DataSource source = new ConverterUtils.DataSource("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\trainingData.arff");
         System.out.println("\n\nLoaded data:\n\n" + source.getDataSet());
         Instances dataFiltered = source.getDataSet();
@@ -70,35 +68,14 @@ public class SVM2 {
         evaluation.crossValidateModel(svm, dataFiltered, 10, new Random(1));
         System.out.println(evaluation.toSummaryString());
         System.out.println(evaluation.weightedAreaUnderROC());
-        double[][] confusionMatrix=evaluation.confusionMatrix();
-        for(int i=0;i<2;i++){
-            for(int j=0;j<2;j++){
-                System.out.print(confusionMatrix[i][j]+"  ");
+        double[][] confusionMatrix = evaluation.confusionMatrix();
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 2; j++) {
+                System.out.print(confusionMatrix[i][j] + "  ");
             }
             System.out.println();
         }
-//       
-//        
-//        //draw ROC curve
-//        ThresholdCurve tc = new ThresholdCurve();
-//        int classIndex = 0; // ROC for the 1st class label
-//        Instances curve = tc.getCurve(evaluation.predictions(), classIndex);
-//   //     2. Put the plotable into a plot container  
-//        PlotData2D plotdata = new PlotData2D(curve);
-//        plotdata.setPlotName(curve.relationName());
-//        plotdata.addInstanceNumberAttribute();
-// //       3. Add the plot container to a visualization panel
-//        ThresholdVisualizePanel tvp = new ThresholdVisualizePanel();
-//        tvp.setROCString("(Area under ROC = "+ Utils.doubleToString(ThresholdCurve.getROCArea(curve), 4) + ")");
-//        tvp.setName(curve.relationName());
-//        tvp.addPlot(plotdata);
-//  //      4. Add the visualization panel to a JFrame
-//        final JFrame jf = new JFrame("WEKA ROC: " + tvp.getName());
-//        jf.setSize(500, 400);
-//        jf.getContentPane().setLayout(new BorderLayout());
-//        jf.getContentPane().add(tvp, BorderLayout.CENTER);
-//        jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-//        jf.setVisible(true);
+
 
 //        //get test instances and perform predictions
 //        Instances testData = createTestInstancesFromDB();
@@ -237,16 +214,16 @@ public class SVM2 {
         InstanceQuery query = new InstanceQuery();
         query.setUsername("root");
         query.setPassword("");
-        
+
         query.setQuery("SELECT content, label FROM article_ceylon_today_2013 where `label`=='other'");
         Instances other1 = query.retrieveInstances();
-        
+
         query.setQuery("SELECT content, label FROM article_daily_mirror_2012 where `label`=='other'");
         Instances other2 = query.retrieveInstances();
-        
+
         query.setQuery("SELECT content, label FROM article_daily_mirror_2013 where `label`=='other'");
         Instances other3 = query.retrieveInstances();
-        
+
 //        query.setQuery("SELECT content, label FROM article_ceylon_today_2013 where `label`=='crime'");
 //        Instances crime1 = query.retrieveInstances();
 //        
@@ -255,7 +232,7 @@ public class SVM2 {
 //        
 //        query.setQuery("SELECT content, label FROM article_daily_mirror_2013 where  `label`=='crime'");
 //        Instances crime3 = query.retrieveInstances();
-        
+
 
         FastVector attributeList = new FastVector(2);
         Attribute a1 = new Attribute("text", (FastVector) null);
@@ -269,7 +246,7 @@ public class SVM2 {
         Instances trainingData = new Instances("TrainingNews", attributeList, 0);
         trainingData.setClassIndex(1);
 
-        int count =0;
+        int count = 0;
         for (int i = 0; i < other1.numInstances(); i++) {
             Instance inst = new Instance(trainingData.numAttributes());
             inst.setValue(a1, other1.instance(i).stringValue(0));
@@ -281,7 +258,7 @@ public class SVM2 {
             trainingData.add(inst);
             count++;
         }
-        
+
         for (int i = 0; i < other2.numInstances(); i++) {
             Instance inst = new Instance(trainingData.numAttributes());
             inst.setValue(a1, other2.instance(i).stringValue(0));
@@ -293,7 +270,7 @@ public class SVM2 {
             trainingData.add(inst);
             count++;
         }
-        
+
         for (int i = 0; i < other3.numInstances(); i++) {
             Instance inst = new Instance(trainingData.numAttributes());
             inst.setValue(a1, other3.instance(i).stringValue(0));
@@ -305,7 +282,7 @@ public class SVM2 {
             trainingData.add(inst);
             count++;
         }
-        
+
 //         for (int i = 0; i < crime1.numInstances(); i++) {
 //            Instance inst = new Instance(trainingData.numAttributes());
 //            inst.setValue(a1, crime1.instance(i).stringValue(0));
@@ -342,13 +319,13 @@ public class SVM2 {
 //            count++;
 //        }
 
-        System.out.println("Other1= "+other1.numInstances());
-        System.out.println("Other2= "+other2.numInstances());
-        System.out.println("Other3= "+other3.numInstances());
+        System.out.println("Other1= " + other1.numInstances());
+        System.out.println("Other2= " + other2.numInstances());
+        System.out.println("Other3= " + other3.numInstances());
 //        System.out.println("crime1= "+crime1.numInstances());
 //        System.out.println("crime2= "+crime2.numInstances());
 //        System.out.println("crime3= "+crime3.numInstances());
-        System.out.println("Total num of instances= "+count);
+        System.out.println("Total num of instances= " + count);
 
 
         // apply the StringToWordVector filter
