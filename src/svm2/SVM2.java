@@ -46,24 +46,25 @@ public class SVM2 {
 
     public void testCrossValidataion() throws Exception {
 
-//        save training data to file, only call if filter parameters have been changed
+//      save training data to file, only call if filter parameters have been changed
         saveTrainingDataToFile();
 
-//        LibSVM --> initialize the model and set SVM type and kernal type
+//      LibSVM --> initialize the model and set SVM type and kernal type
         LibSVM svm = new LibSVM();
-        String svmOptions = "-S 0 -K 2 -C 8 -G 0.001953125"; //-C 3 -G 0.00048828125"
+        String svmOptions = "-S 0 -K 2 -C 8 -G 0.001953125 -W 10 1"; //-C 3 -G 0.00048828125"
         svm.setOptions(weka.core.Utils.splitOptions(svmOptions));
-        System.out.println("SVM Type and Keranl Type= " + svm.getSVMType() + svm.getKernelType());//1,3 best result 81%
         svm.setNormalize(true);
+        System.out.println("SVM Type and Keranl Type= " + svm.getSVMType() + svm.getKernelType());//1,3 best result 81%
+        //     svm.setNormalize(true);
 
 
-//        load training data from .arff file
+//      load training data from .arff file
         ConverterUtils.DataSource source = new ConverterUtils.DataSource("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\trainingData.arff");
         System.out.println("\n\nLoaded data:\n\n" + source.getDataSet());
         Instances dataFiltered = source.getDataSet();
         dataFiltered.setClassIndex(0);
 
-//         gridSearch(svm, dataFiltered);
+//      gridSearch(svm, dataFiltered);
         Evaluation evaluation = new Evaluation(dataFiltered);
         evaluation.crossValidateModel(svm, dataFiltered, 10, new Random(1));
         System.out.println(evaluation.toSummaryString());
@@ -72,10 +73,12 @@ public class SVM2 {
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 2; j++) {
                 System.out.print(confusionMatrix[i][j] + "  ");
+
             }
             System.out.println();
         }
-
+        System.out.println("accuracy for crime class= " + (confusionMatrix[0][0] / (confusionMatrix[0][1] + confusionMatrix[0][0])) * 100 + "%");
+        System.out.println("accuracy for other class= " + (confusionMatrix[1][1] / (confusionMatrix[1][1] + confusionMatrix[1][0])) * 100 + "%");
 
 //        //get test instances and perform predictions
 //        Instances testData = createTestInstancesFromDB();
@@ -201,13 +204,17 @@ public class SVM2 {
 
         //create new filter for vector transformation
         StringToWordVector filter = new StringToWordVector();
-        filter.setLowerCaseTokens(true);
-        filter.setOutputWordCounts(true);
-        filter.setTFTransform(true);
-        filter.setIDFTransform(true);
-        filter.setStopwords(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\StopWordsR1.txt"));
-        filter.setTokenizer(tokenizer);
-        filter.setStemmer(scnlpl);
+        filter.setLowerCaseTokens(true); //ok accepted
+        filter.setOutputWordCounts(true); // ok accepted given in research papers
+        filter.setTFTransform(true); // normalization as given in scikit
+        filter.setIDFTransform(true); // normalization as given in scikit       
+        filter.setStopwords(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\StopWordsR2.txt")); // stop word removal given in research paper
+        filter.setTokenizer(tokenizer); // given in research papers
+        filter.setStemmer(scnlpl); // given in research papers as stemming , here we go forward as use lemmatizer
+        // feature selection has not performed as "how to" paper say that it wont improve accuracy in SVM and our dictionary
+        // is small
+
+
         System.out.println("Stemmer Name- " + filter.getStemmer());
 
 
@@ -215,24 +222,22 @@ public class SVM2 {
         query.setUsername("root");
         query.setPassword("");
 
-        query.setQuery("SELECT content, label FROM article_ceylon_today_2013 where `label`=='other'");
-        Instances other1 = query.retrieveInstances();
+        int numOfNewsPapers = 5;
+        Instances[] instances = new Instances[5];
+        query.setQuery("SELECT content, label FROM article_ceylon_today_2013 where `label` IS NOT NULL");
+        instances[0] = query.retrieveInstances();
 
-        query.setQuery("SELECT content, label FROM article_daily_mirror_2012 where `label`=='other'");
-        Instances other2 = query.retrieveInstances();
+        query.setQuery("SELECT content, label FROM article_daily_mirror_2012 where `label` IS NOT NULL");
+        instances[1] = query.retrieveInstances();
 
-        query.setQuery("SELECT content, label FROM article_daily_mirror_2013 where `label`=='other'");
-        Instances other3 = query.retrieveInstances();
+        query.setQuery("SELECT content, label FROM article_daily_mirror_2013 where `label` IS NOT NULL");
+        instances[2] = query.retrieveInstances();
 
-//        query.setQuery("SELECT content, label FROM article_ceylon_today_2013 where `label`=='crime'");
-//        Instances crime1 = query.retrieveInstances();
-//        
-//        query.setQuery("SELECT content, label FROM article_daily_mirror_2012 where  `label`=='crime'");
-//        Instances crime2 = query.retrieveInstances();
-//        
-//        query.setQuery("SELECT content, label FROM article_daily_mirror_2013 where  `label`=='crime'");
-//        Instances crime3 = query.retrieveInstances();
-
+        query.setQuery("SELECT content, label FROM article_the_island_2012 where `label` IS NOT NULL");
+        instances[3] = query.retrieveInstances();
+        
+        query.setQuery("SELECT content, label FROM article_the_island_2013 where `label` IS NOT NULL");
+        instances[4] = query.retrieveInstances();
 
         FastVector attributeList = new FastVector(2);
         Attribute a1 = new Attribute("text", (FastVector) null);
@@ -247,85 +252,25 @@ public class SVM2 {
         trainingData.setClassIndex(1);
 
         int count = 0;
-        for (int i = 0; i < other1.numInstances(); i++) {
-            Instance inst = new Instance(trainingData.numAttributes());
-            inst.setValue(a1, other1.instance(i).stringValue(0));
-            inst.setValue(c, other1.instance(i).stringValue(1));
-            inst.setDataset(trainingData);
+        for (int i = 0; i < numOfNewsPapers; i++) {
+            for (int j = 0; j < instances[i].numInstances(); j++) {
+                Instance inst = new Instance(trainingData.numAttributes());
+                inst.setValue(a1, instances[i].instance(j).stringValue(0));
+                inst.setValue(c, instances[i].instance(j).stringValue(1));
+                inst.setDataset(trainingData);
 
 
-            System.out.println(inst);
-            trainingData.add(inst);
-            count++;
+                System.out.println(inst);
+                trainingData.add(inst);
+                count++;
+            }
         }
 
-        for (int i = 0; i < other2.numInstances(); i++) {
-            Instance inst = new Instance(trainingData.numAttributes());
-            inst.setValue(a1, other2.instance(i).stringValue(0));
-            inst.setValue(c, other2.instance(i).stringValue(1));
-            inst.setDataset(trainingData);
 
-
-            System.out.println(inst);
-            trainingData.add(inst);
-            count++;
+        for (int k = 0; k < numOfNewsPapers; k++) {
+            System.out.println("Num of articles in " + k + " " + instances[k].numInstances());
         }
-
-        for (int i = 0; i < other3.numInstances(); i++) {
-            Instance inst = new Instance(trainingData.numAttributes());
-            inst.setValue(a1, other3.instance(i).stringValue(0));
-            inst.setValue(c, other3.instance(i).stringValue(1));
-            inst.setDataset(trainingData);
-
-
-            System.out.println(inst);
-            trainingData.add(inst);
-            count++;
-        }
-
-//         for (int i = 0; i < crime1.numInstances(); i++) {
-//            Instance inst = new Instance(trainingData.numAttributes());
-//            inst.setValue(a1, crime1.instance(i).stringValue(0));
-//            inst.setValue(c, crime1.instance(i).stringValue(1));
-//            inst.setDataset(trainingData);
-//
-//
-//            System.out.println(inst);
-//            trainingData.add(inst);
-//            count++;
-//        }
-//        
-//        for (int i = 0; i < crime2.numInstances(); i++) {
-//            Instance inst = new Instance(trainingData.numAttributes());
-//            inst.setValue(a1, crime2.instance(i).stringValue(0));
-//            inst.setValue(c, crime2.instance(i).stringValue(1));
-//            inst.setDataset(trainingData);
-//
-//
-//            System.out.println(inst);
-//            trainingData.add(inst);
-//            count++;
-//        }
-//        
-//        for (int i = 0; i < crime3.numInstances(); i++) {
-//            Instance inst = new Instance(trainingData.numAttributes());
-//            inst.setValue(a1, crime3.instance(i).stringValue(0));
-//            inst.setValue(c, crime3.instance(i).stringValue(1));
-//            inst.setDataset(trainingData);
-//
-//
-//            System.out.println(inst);
-//            trainingData.add(inst);
-//            count++;
-//        }
-
-        System.out.println("Other1= " + other1.numInstances());
-        System.out.println("Other2= " + other2.numInstances());
-        System.out.println("Other3= " + other3.numInstances());
-//        System.out.println("crime1= "+crime1.numInstances());
-//        System.out.println("crime2= "+crime2.numInstances());
-//        System.out.println("crime3= "+crime3.numInstances());
-        System.out.println("Total num of instances= " + count);
+        System.out.println("Total Num of Insatances= " + count);
 
 
         // apply the StringToWordVector filter
