@@ -28,7 +28,7 @@ import weka.filters.AllFilter;
 public class SVM2 {
 
     public static void main(String[] args) {
-
+        System.out.println("SVM2");
         SVM2 wekaTestDB = new SVM2();
         try {
             wekaTestDB.saveTrainingDataToFile();
@@ -49,7 +49,7 @@ public class SVM2 {
         System.out.println("---------------------------------------------------");
          
         LibSVM svm = new LibSVM();
-        String svmOptions = "-S 0 -K 2 -C 8 -G 0.001953125 -W 6 1"; //-C 3 -G 0.00048828125"
+        String svmOptions = "-S 0 -K 2 -C 8 -G 0.001953125 -W 10 1"; //-C 3 -G 0.00048828125"
         svm.setOptions(weka.core.Utils.splitOptions(svmOptions));
         System.out.println("SVM Type and Keranl Type= " + svm.getSVMType() + svm.getKernelType());//1,3 best result 81%
        
@@ -63,7 +63,7 @@ public class SVM2 {
         Instances dataFiltered = source.getDataSet();
         dataFiltered.setClassIndex(0);
 
-//      gridSearch(svm, dataFiltered);
+ //       gridSearch(svm, dataFiltered);
         Evaluation evaluation = new Evaluation(dataFiltered);
         evaluation.crossValidateModel(svm, dataFiltered, 10, new Random(1));
         System.out.println(evaluation.toSummaryString());
@@ -79,7 +79,7 @@ public class SVM2 {
         System.out.println("accuracy for crime class= " + (confusionMatrix[0][0] / (confusionMatrix[0][1] + confusionMatrix[0][0])) * 100 + "%");
         System.out.println("accuracy for other class= " + (confusionMatrix[1][1] / (confusionMatrix[1][1] + confusionMatrix[1][0])) * 100 + "%");
 
-//        //get test instances and perform predictions
+        //get test instances and perform predictions
 //        Instances testData = createTestInstancesFromDB();
 //        Instances testDataFiltered = Filter.useFilter(testData, filter);
 //        svm.buildClassifier(dataFiltered);
@@ -89,7 +89,7 @@ public class SVM2 {
 //            System.out.println(testData.instance(i));
 //            System.out.println(svm.classifyInstance(testDataFiltered.instance(i)));
 //            System.out.println();
-//        }
+////        }
 
     }
 
@@ -208,14 +208,22 @@ public class SVM2 {
         StringToWordVector filter = new StringToWordVector();
         filter.setLowerCaseTokens(true); //ok accepted
         filter.setOutputWordCounts(true); // ok accepted given in research papers
+        //Tf–idf can be successfully used for stop-words filtering in various subject fields including text summarization and classification.
         filter.setTFTransform(true); // normalization as given in scikit
         filter.setIDFTransform(true); // normalization as given in scikit       
-        filter.setStopwords(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\StopWordsR2.txt")); // stop word removal given in research paper
+        filter.setStopwords(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\StopWordsR4.txt")); // stop word removal given in research paper
         filter.setTokenizer(tokenizer); // given in research papers
-        filter.setStemmer(stemmer); // given in research papers as stemming , here we go forward as use lemmatizer
+        filter.setStemmer(scnlpl); // given in research papers as stemming , here we go forward as use lemmatizer
         // feature selection has not performed as "how to" paper say that it wont improve accuracy in SVM and our dictionary
         // is small
-
+        
+        //feature reduction- similar as stop word removal , we can easily remove person names,towns etc
+        /*
+         *If you only want to have the 100 most frequent terms, you stringToWordVector.setWordsToKeep(100). Note that this will try to keep 100 words of every class. If you do not want to keep 100 words per class, stringToWordVector.setDoNotOperateOnPerClassBasis(true). You will get slightly above 100 if there are several words with the same frequency, so the 100 is just a kind of target value.
+         */
+//        filter.setWordsToKeep(200); 
+//        filter.setDoNotOperateOnPerClassBasis(false); 
+        ////
 
         System.out.println("Stemmer Name- " + filter.getStemmer());
 
