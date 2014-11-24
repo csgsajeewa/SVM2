@@ -38,7 +38,9 @@ public class SVMWithBalancedData {
 
         SVMWithBalancedData wekaTestDB = new SVMWithBalancedData();
         try {
+            //wekaTestDB.saveTrainingDataToFile();
             wekaTestDB.testCrossValidataion();
+           
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -47,8 +49,9 @@ public class SVMWithBalancedData {
 
     public void testCrossValidataion() throws Exception {
 
-//      save training data to file, only call if filter parameters have been changed
-      //  saveTrainingDataToFile();
+        System.out.println("-------------------------------------------------");
+        System.out.println("Running LIBSVM with balanced data");
+        System.out.println("---------------------------------------------------");
 
 //      LibSVM --> initialize the model and set SVM type and kernal type
         LibSVM svm = new LibSVM();
