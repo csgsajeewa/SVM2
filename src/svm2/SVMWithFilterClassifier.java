@@ -34,19 +34,20 @@ import weka.gui.visualize.ThresholdVisualizePanel;
 
 public class SVMWithFilterClassifier {
 
-//    public static void main(String[] args) {
-//
-//        SVMWithFilterClassifier wekaTestDB = new SVMWithFilterClassifier();
-//        try {
-//            wekaTestDB.testCrossValidataion();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//    }
+    public static void main(String[] args) {
+
+        SVMWithFilterClassifier wekaTestDB = new SVMWithFilterClassifier();
+        try {
+            wekaTestDB.testCrossValidataion();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
 
     public void testCrossValidataion() throws Exception {
-
+        
+        System.out.println("Filtered Classifier");
         //set tokenizer - we can specify n-grams for classification
         NGramTokenizer tokenizer = new NGramTokenizer();
         tokenizer.setNGramMinSize(1);
@@ -68,21 +69,29 @@ public class SVMWithFilterClassifier {
         filter.setIDFTransform(true);
         filter.setStopwords(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\StopWordsR2.txt"));
         filter.setTokenizer(tokenizer);
-        filter.setStemmer(scnlpl);
+        filter.setStemmer(stemmer);
         System.out.println("Stemmer Name- " + filter.getStemmer());
 
         InstanceQuery query = new InstanceQuery();
         query.setUsername("root");
         query.setPassword("");
 
+        int numOfNewsPapers = 5;
+        Instances[] instances = new Instances[5];
         query.setQuery("SELECT content, label FROM article_ceylon_today_2013 where `label` IS NOT NULL");
-        Instances other1 = query.retrieveInstances();
+        instances[0] = query.retrieveInstances();
 
         query.setQuery("SELECT content, label FROM article_daily_mirror_2012 where `label` IS NOT NULL");
-        Instances other2 = query.retrieveInstances();
+        instances[1] = query.retrieveInstances();
 
         query.setQuery("SELECT content, label FROM article_daily_mirror_2013 where `label` IS NOT NULL");
-        Instances other3 = query.retrieveInstances();
+        instances[2] = query.retrieveInstances();
+
+        query.setQuery("SELECT content, label FROM article_the_island_2012 where `label` IS NOT NULL");
+        instances[3] = query.retrieveInstances();
+        
+        query.setQuery("SELECT content, label FROM article_the_island_2013 where `label` IS NOT NULL");
+        instances[4] = query.retrieveInstances();
 
         FastVector attributeList = new FastVector(2);
         Attribute a1 = new Attribute("text", (FastVector) null);
@@ -97,51 +106,31 @@ public class SVMWithFilterClassifier {
         trainingData.setClassIndex(1);
 
         int count = 0;
-        for (int i = 0; i < other1.numInstances(); i++) {
-            Instance inst = new Instance(trainingData.numAttributes());
-            inst.setValue(a1, other1.instance(i).stringValue(0));
-            inst.setValue(c, other1.instance(i).stringValue(1));
-            inst.setDataset(trainingData);
+        for (int i = 0; i < numOfNewsPapers; i++) {
+            for (int j = 0; j < instances[i].numInstances(); j++) {
+                Instance inst = new Instance(trainingData.numAttributes());
+                inst.setValue(a1, instances[i].instance(j).stringValue(0));
+                inst.setValue(c, instances[i].instance(j).stringValue(1));
+                inst.setDataset(trainingData);
 
 
-            System.out.println(inst);
-            trainingData.add(inst);
-            count++;
+                System.out.println(inst);
+                trainingData.add(inst);
+                count++;
+            }
         }
 
-        for (int i = 0; i < other2.numInstances(); i++) {
-            Instance inst = new Instance(trainingData.numAttributes());
-            inst.setValue(a1, other2.instance(i).stringValue(0));
-            inst.setValue(c, other2.instance(i).stringValue(1));
-            inst.setDataset(trainingData);
 
-
-            System.out.println(inst);
-            trainingData.add(inst);
-            count++;
+        for (int k = 0; k < numOfNewsPapers; k++) {
+            System.out.println("Num of articles in " + k + " " + instances[k].numInstances());
         }
-
-        for (int i = 0; i < other3.numInstances(); i++) {
-            Instance inst = new Instance(trainingData.numAttributes());
-            inst.setValue(a1, other3.instance(i).stringValue(0));
-            inst.setValue(c, other3.instance(i).stringValue(1));
-            inst.setDataset(trainingData);
-
-
-            System.out.println(inst);
-            trainingData.add(inst);
-            count++;
-        }
-
-        System.out.println("Other1= " + other1.numInstances());
-        System.out.println("Other2= " + other2.numInstances());
-        System.out.println("Other3= " + other3.numInstances());
-        System.out.println("Total num of instances= " + count);
+        System.out.println("Total Num of Insatances= " + count);
 
 //        LibSVM --> initialize the model and set SVM type and kernal type
         LibSVM svm = new LibSVM();
-        String svmOptions = "-S 0 -K 2 -C 8 -G 0.001953125"; //-C 3 -G 0.00048828125"
+        String svmOptions = "-S 0 -K 2 -C 8 -G 0.001953125 -W 10 1"; //-C 3 -G 0.00048828125"
         svm.setOptions(weka.core.Utils.splitOptions(svmOptions));
+        svm.setNormalize(true);
         System.out.println("SVM Type and Keranl Type= " + svm.getSVMType() + svm.getKernelType());//1,3 best result 81%
 
         FilteredClassifier fc = new FilteredClassifier();
@@ -160,6 +149,8 @@ public class SVMWithFilterClassifier {
             }
             System.out.println();
         }
+        System.out.println("accuracy for crime class= " + (confusionMatrix[0][0] / (confusionMatrix[0][1] + confusionMatrix[0][0])) * 100 + "%");
+        System.out.println("accuracy for other class= " + (confusionMatrix[1][1] / (confusionMatrix[1][1] + confusionMatrix[1][0])) * 100 + "%");
 
 
 
