@@ -4,7 +4,6 @@
  */
 package svm2;
 
-import java.awt.BorderLayout;
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.LibSVM;
 import weka.core.Instances;
@@ -15,21 +14,16 @@ import weka.filters.unsupervised.attribute.StringToWordVector;
 
 import java.io.File;
 import java.util.Random;
-import javax.swing.JFrame;
-import weka.classifiers.evaluation.ThresholdCurve;
 import weka.classifiers.meta.GridSearch;
 import weka.core.Attribute;
 import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.SelectedTag;
 import weka.core.Tag;
-import weka.core.Utils;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.ConverterUtils;
 import weka.experiment.InstanceQuery;
 import weka.filters.AllFilter;
-import weka.gui.visualize.PlotData2D;
-import weka.gui.visualize.ThresholdVisualizePanel;
 
 public class SVM2 {
 
@@ -37,6 +31,7 @@ public class SVM2 {
 
         SVM2 wekaTestDB = new SVM2();
         try {
+            wekaTestDB.saveTrainingDataToFile();
             wekaTestDB.testCrossValidataion();
         } catch (Exception e) {
             e.printStackTrace();
@@ -46,16 +41,20 @@ public class SVM2 {
 
     public void testCrossValidataion() throws Exception {
 
-//      save training data to file, only call if filter parameters have been changed
-        saveTrainingDataToFile();
+
 
 //      LibSVM --> initialize the model and set SVM type and kernal type
+        System.out.println("-------------------------------------------------");
+        System.out.println("Running LIBSVM");
+        System.out.println("---------------------------------------------------");
+         
         LibSVM svm = new LibSVM();
-        String svmOptions = "-S 0 -K 2 -C 8 -G 0.001953125 -W 10 1"; //-C 3 -G 0.00048828125"
+        String svmOptions = "-S 0 -K 2 -C 8 -G 0.001953125 -W 6 1"; //-C 3 -G 0.00048828125"
         svm.setOptions(weka.core.Utils.splitOptions(svmOptions));
-        svm.setNormalize(true);
         System.out.println("SVM Type and Keranl Type= " + svm.getSVMType() + svm.getKernelType());//1,3 best result 81%
-        //     svm.setNormalize(true);
+       
+        ////////////////////////////Normalization/////////////////
+        svm.setNormalize(true);
 
 
 //      load training data from .arff file
@@ -189,12 +188,15 @@ public class SVM2 {
     }
 
     public void saveTrainingDataToFile() throws Exception {
+        System.out.println("--------------------------------------------");
+        System.out.println("Save Training Data To File");
+        System.out.println("---------------------------------------------");
         //set tokenizer - we can specify n-grams for classification
         NGramTokenizer tokenizer = new NGramTokenizer();
         tokenizer.setNGramMinSize(1);
         tokenizer.setNGramMaxSize(1);
         tokenizer.setDelimiters("\\W");
-
+        
         //set stemmer - set english stemmer
         SnowballStemmer stemmer = new SnowballStemmer();
         stemmer.setStemmer("english");
@@ -210,7 +212,7 @@ public class SVM2 {
         filter.setIDFTransform(true); // normalization as given in scikit       
         filter.setStopwords(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\StopWordsR2.txt")); // stop word removal given in research paper
         filter.setTokenizer(tokenizer); // given in research papers
-        filter.setStemmer(scnlpl); // given in research papers as stemming , here we go forward as use lemmatizer
+        filter.setStemmer(stemmer); // given in research papers as stemming , here we go forward as use lemmatizer
         // feature selection has not performed as "how to" paper say that it wont improve accuracy in SVM and our dictionary
         // is small
 
