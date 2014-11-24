@@ -46,8 +46,10 @@ public class SVMWithFilterClassifier {
     }
 
     public void testCrossValidataion() throws Exception {
-        
+        System.out.println("-----------------------------------------");
         System.out.println("Filtered Classifier");
+        System.out.println("------------------------------------------");
+        
         //set tokenizer - we can specify n-grams for classification
         NGramTokenizer tokenizer = new NGramTokenizer();
         tokenizer.setNGramMinSize(1);
@@ -125,7 +127,10 @@ public class SVMWithFilterClassifier {
             System.out.println("Num of articles in " + k + " " + instances[k].numInstances());
         }
         System.out.println("Total Num of Insatances= " + count);
-
+        
+        System.out.println("-------------------------------------------------");
+        System.out.println("Running LIBSVM with FC");
+        System.out.println("---------------------------------------------------");
 //        LibSVM --> initialize the model and set SVM type and kernal type
         LibSVM svm = new LibSVM();
         String svmOptions = "-S 0 -K 2 -C 8 -G 0.001953125 -W 10 1"; //-C 3 -G 0.00048828125"
