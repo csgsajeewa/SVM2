@@ -76,8 +76,8 @@ public class StanfordCoreNLPLemmatizer implements Stemmer, OptionHandler {
         result = new ArrayList();
         result.add("-S");
         result.add("Stanford Core NLP");
-        
+
         return (String[])result.toArray(new String[result.size()]);
-        
+
     }
 }

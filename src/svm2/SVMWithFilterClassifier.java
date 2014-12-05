@@ -69,7 +69,7 @@ public class SVMWithFilterClassifier {
         filter.setOutputWordCounts(true);
         filter.setTFTransform(true);
         filter.setIDFTransform(true);
-        filter.setStopwords(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\StopWordsR2.txt"));
+        filter.setStopwords(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\StopWordsR4.txt"));
         filter.setTokenizer(tokenizer);
         filter.setStemmer(stemmer);
         System.out.println("Stemmer Name- " + filter.getStemmer());

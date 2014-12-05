@@ -54,9 +54,9 @@ public class SVMWithGate {
 
     public static void main(String[] args) throws Exception {
         SVMWithGate sVMWithGate = new SVMWithGate();
-        sVMWithGate.test();
-//        sVMWithGate.saveTrainingDataToFile();
-//        sVMWithGate.testCrossValidataion();
+       // sVMWithGate.test();
+        sVMWithGate.saveTrainingDataToFile();
+        sVMWithGate.testCrossValidataion();
     }
     
     public void testCrossValidataion() throws Exception {
@@ -77,7 +77,7 @@ public class SVMWithGate {
         svm.setNormalize(true);
         
 //      load training data from .arff file
-        ConverterUtils.DataSource source = new ConverterUtils.DataSource("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\trainingData.arff");
+        ConverterUtils.DataSource source = new ConverterUtils.DataSource("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\trainingDataWithG.arff");
         System.out.println("\n\nLoaded data:\n\n" + source.getDataSet());
         Instances dataFiltered = source.getDataSet();
         dataFiltered.setClassIndex(0);
@@ -239,22 +239,22 @@ public class SVMWithGate {
         query.setUsername("root");
         query.setPassword("");
 
-        int numOfNewsPapers = 1;
+        int numOfNewsPapers = 5;
         Instances[] instances = new Instances[numOfNewsPapers];
-        query.setQuery("SELECT content, label FROM article_ceylon_today_2013 where `label` IS NOT NULL");
+        query.setQuery("SELECT content, label FROM article_ceylon_today_2013 where `label` IS NOT NULL");//IS NOT NULL
         instances[0] = query.retrieveInstances();
 
-//        query.setQuery("SELECT content, label FROM article_daily_mirror_2012 where `label` IS NOT NULL");
-//        instances[1] = query.retrieveInstances();
-//
-//        query.setQuery("SELECT content, label FROM article_daily_mirror_2013 where `label` IS NOT NULL");
-//        instances[2] = query.retrieveInstances();
-//
-//        query.setQuery("SELECT content, label FROM article_the_island_2012 where `label` IS NOT NULL");
-//        instances[3] = query.retrieveInstances();
-//        
-//        query.setQuery("SELECT content, label FROM article_the_island_2013 where `label` IS NOT NULL");
-//        instances[4] = query.retrieveInstances();
+        query.setQuery("SELECT content, label FROM article_daily_mirror_2012 where `label` IS NOT NULL ");
+        instances[1] = query.retrieveInstances();
+
+        query.setQuery("SELECT content, label FROM article_daily_mirror_2013 where `label` IS NOT NULL");
+        instances[2] = query.retrieveInstances();
+
+        query.setQuery("SELECT content, label FROM article_the_island_2012 where `label` IS NOT NULL ");
+        instances[3] = query.retrieveInstances();
+        
+        query.setQuery("SELECT content, label FROM article_the_island_2013 where `label` IS NOT NULL ");
+        instances[4] = query.retrieveInstances();
 
         FastVector attributeList = new FastVector(2);
         Attribute a1 = new Attribute("text", (FastVector) null);
@@ -299,7 +299,7 @@ public class SVMWithGate {
 
         ArffSaver saver = new ArffSaver();
         saver.setInstances(dataFiltered);
-        saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\trainingData.arff"));
+        saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\trainingDataWithG.arff"));
         saver.writeBatch();
     }
 }

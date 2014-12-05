@@ -4,6 +4,7 @@
  */
 package svm2;
 
+
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.LibSVM;
 import weka.core.Instances;
@@ -14,6 +15,7 @@ import weka.filters.unsupervised.attribute.StringToWordVector;
 
 import java.io.File;
 import java.util.Random;
+import weka.classifiers.meta.AdaBoostM1;
 import weka.classifiers.meta.GridSearch;
 import weka.core.Attribute;
 import weka.core.FastVector;
@@ -25,14 +27,14 @@ import weka.core.converters.ConverterUtils;
 import weka.experiment.InstanceQuery;
 import weka.filters.AllFilter;
 
-public class SVM2 {
+public class SVMEnsembleMethod {
 
     public static void main(String[] args) {
         System.out.println("SVM2");
-        SVM2 wekaTestDB = new SVM2();
+        SVMEnsembleMethod wekaTestDB = new SVMEnsembleMethod();
         try {
            wekaTestDB.saveTrainingDataToFile();
-           // wekaTestDB.testCrossValidataion();
+            wekaTestDB.testCrossValidataion();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -59,14 +61,19 @@ public class SVM2 {
 
 
 //      load training data from .arff file
-        ConverterUtils.DataSource source = new ConverterUtils.DataSource("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\trainingData.arff");
+        ConverterUtils.DataSource source = new ConverterUtils.DataSource("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\trainingDataForE.arff");
         System.out.println("\n\nLoaded data:\n\n" + source.getDataSet());
         Instances dataFiltered = source.getDataSet();
         dataFiltered.setClassIndex(0);
+        
+        //boosting and bagging
+        AdaBoostM1 adaBoostM1=new AdaBoostM1();
+        adaBoostM1.setNumIterations(2);
+        adaBoostM1.setClassifier(svm);
 
  //       gridSearch(svm, dataFiltered);
         Evaluation evaluation = new Evaluation(dataFiltered);
-        evaluation.crossValidateModel(svm, dataFiltered, 10, new Random(1));
+        evaluation.crossValidateModel(adaBoostM1, dataFiltered, 10, new Random(1));
         System.out.println(evaluation.toSummaryString());
         System.out.println(evaluation.weightedAreaUnderROC());
         double[][] confusionMatrix = evaluation.confusionMatrix();
@@ -80,17 +87,6 @@ public class SVM2 {
         System.out.println("accuracy for crime class= " + (confusionMatrix[0][0] / (confusionMatrix[0][1] + confusionMatrix[0][0])) * 100 + "%");
         System.out.println("accuracy for other class= " + (confusionMatrix[1][1] / (confusionMatrix[1][1] + confusionMatrix[1][0])) * 100 + "%");
 
-        //get test instances and perform predictions
-//        Instances testData = createTestInstancesFromDB();
-//        Instances testDataFiltered = Filter.useFilter(testData, filter);
-//        svm.buildClassifier(dataFiltered);
-//
-//        for (int i = 0; i < testDataFiltered.numInstances(); i++) {
-//
-//            System.out.println(testData.instance(i));
-//            System.out.println(svm.classifyInstance(testDataFiltered.instance(i)));
-//            System.out.println();
-////        }
 
     }
 
@@ -214,7 +210,7 @@ public class SVM2 {
         filter.setIDFTransform(true); // normalization as given in scikit       
         filter.setStopwords(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\StopWordsR4.txt")); // stop word removal given in research paper
         filter.setTokenizer(tokenizer); // given in research papers
-        filter.setStemmer(stemmer); // given in research papers as stemming , here we go forward as use lemmatizer
+        filter.setStemmer(scnlpl); // given in research papers as stemming , here we go forward as use lemmatizer
         // feature selection has not performed as "how to" paper say that it wont improve accuracy in SVM and our dictionary
         // is small
         
@@ -293,7 +289,8 @@ public class SVM2 {
 
         ArffSaver saver = new ArffSaver();
         saver.setInstances(dataFiltered);
-        saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\trainingDataForEnsembling.arff"));
+        saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\trainingDataForEnsemble.arff"));
         saver.writeBatch();
     }
 }
+
