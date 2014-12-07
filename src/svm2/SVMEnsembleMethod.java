@@ -16,6 +16,7 @@ import weka.filters.unsupervised.attribute.StringToWordVector;
 import java.io.File;
 import java.util.Random;
 import weka.classifiers.meta.AdaBoostM1;
+import weka.classifiers.meta.Bagging;
 import weka.classifiers.meta.GridSearch;
 import weka.core.Attribute;
 import weka.core.FastVector;
@@ -33,7 +34,7 @@ public class SVMEnsembleMethod {
         System.out.println("SVM2");
         SVMEnsembleMethod wekaTestDB = new SVMEnsembleMethod();
         try {
-           wekaTestDB.saveTrainingDataToFile();
+          // wekaTestDB.saveTrainingDataToFile();
             wekaTestDB.testCrossValidataion();
         } catch (Exception e) {
             e.printStackTrace();
@@ -43,25 +44,21 @@ public class SVMEnsembleMethod {
 
     public void testCrossValidataion() throws Exception {
 
-
-
-//      LibSVM --> initialize the model and set SVM type and kernal type
         System.out.println("-------------------------------------------------");
         System.out.println("Running LIBSVM");
         System.out.println("---------------------------------------------------");
          
         LibSVM svm = new LibSVM();
-        String svmOptions = "-S 0 -K 2 -C 8 -G 0.001953125 -W 10 1"; //-C 3 -G 0.001953125"
+        String svmOptions = "-S 0 -K 2 -C 8 -G 0.001953125";// -W 6 1"; //-C 3 -G 0.001953125"
         svm.setOptions(weka.core.Utils.splitOptions(svmOptions));
         System.out.println("SVM Type and Keranl Type= " + svm.getSVMType() + svm.getKernelType());//1,3 best result 81%
        
         ////////////////////////////Normalization/////////////////
-        svm.setNormalize(true);
+      //  svm.setNormalize(true);
         
 
-
 //      load training data from .arff file
-        ConverterUtils.DataSource source = new ConverterUtils.DataSource("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\trainingDataForE.arff");
+        ConverterUtils.DataSource source = new ConverterUtils.DataSource("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingDataUSSMOTE464.arff");
         System.out.println("\n\nLoaded data:\n\n" + source.getDataSet());
         Instances dataFiltered = source.getDataSet();
         dataFiltered.setClassIndex(0);
@@ -70,10 +67,14 @@ public class SVMEnsembleMethod {
         AdaBoostM1 adaBoostM1=new AdaBoostM1();
         adaBoostM1.setNumIterations(2);
         adaBoostM1.setClassifier(svm);
+        
+        Bagging bagging=new Bagging();
+        bagging.setNumIterations(2);
+        bagging.setClassifier(svm);
 
  //       gridSearch(svm, dataFiltered);
         Evaluation evaluation = new Evaluation(dataFiltered);
-        evaluation.crossValidateModel(adaBoostM1, dataFiltered, 10, new Random(1));
+        evaluation.crossValidateModel(bagging, dataFiltered, 10, new Random(1));
         System.out.println(evaluation.toSummaryString());
         System.out.println(evaluation.weightedAreaUnderROC());
         double[][] confusionMatrix = evaluation.confusionMatrix();
@@ -289,7 +290,7 @@ public class SVMEnsembleMethod {
 
         ArffSaver saver = new ArffSaver();
         saver.setInstances(dataFiltered);
-        saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\trainingDataForEnsemble.arff"));
+        saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\trainingDataForEnsembling.arff"));
         saver.writeBatch();
     }
 }
