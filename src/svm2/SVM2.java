@@ -28,7 +28,10 @@ import weka.filters.AllFilter;
 public class SVM2 {
 
     public static void main(String[] args) {
-        System.out.println("SVM2");
+        System.out.println("-------------------------------------------------");
+        System.out.println("Running LIBSVM");
+        System.out.println("---------------------------------------------------");
+        
         SVM2 wekaTestDB = new SVM2();
         try {
            wekaTestDB.saveTrainingDataToFile();
@@ -41,13 +44,8 @@ public class SVM2 {
 
     public void testCrossValidataion() throws Exception {
 
-
-
 //      LibSVM --> initialize the model and set SVM type and kernal type
-        System.out.println("-------------------------------------------------");
-        System.out.println("Running LIBSVM");
-        System.out.println("---------------------------------------------------");
-         
+             
         LibSVM svm = new LibSVM();
         String svmOptions = "-S 0 -K 2 -C 8 -G 0.001953125 -W 10 1"; //-C 3 -G 0.001953125"
         svm.setOptions(weka.core.Utils.splitOptions(svmOptions));
@@ -56,8 +54,6 @@ public class SVM2 {
         ////////////////////////////Normalization/////////////////
         svm.setNormalize(true);
         
-
-
 //      load training data from .arff file
         ConverterUtils.DataSource source = new ConverterUtils.DataSource("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\trainingData.arff");
         System.out.println("\n\nLoaded data:\n\n" + source.getDataSet());
