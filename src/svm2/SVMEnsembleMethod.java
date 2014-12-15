@@ -49,7 +49,7 @@ public class SVMEnsembleMethod {
         System.out.println("---------------------------------------------------");
          
         LibSVM svm = new LibSVM();
-        String svmOptions = "-S 0 -K 2 -C 8 -G 0.001953125";// -W 6 1"; //-C 3 -G 0.001953125"
+        String svmOptions = "-S 0 -K 2 -C 2 -G 0.0078125";// -W 6 1"; //-C 3 -G 0.001953125"
         svm.setOptions(weka.core.Utils.splitOptions(svmOptions));
         System.out.println("SVM Type and Keranl Type= " + svm.getSVMType() + svm.getKernelType());//1,3 best result 81%
        
@@ -57,8 +57,8 @@ public class SVMEnsembleMethod {
       //  svm.setNormalize(true);
         
 
-//      load training data from .arff file
-        ConverterUtils.DataSource source = new ConverterUtils.DataSource("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingDataUSSMOTE464.arff");
+        //      load training data from .arff file
+        ConverterUtils.DataSource source = new ConverterUtils.DataSource("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingDataHybrid8.arff");//"C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingDataHybrid5.arff
         System.out.println("\n\nLoaded data:\n\n" + source.getDataSet());
         Instances dataFiltered = source.getDataSet();
         dataFiltered.setClassIndex(0);
