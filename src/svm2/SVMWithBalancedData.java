@@ -13,7 +13,6 @@ import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.StringToWordVector;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Random;
 import libsvm.svm;
 import libsvm.svm_model;
@@ -22,7 +21,6 @@ import weka.core.Attribute;
 import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.SelectedTag;
-import weka.core.Tag;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.ConverterUtils;
 import weka.experiment.InstanceQuery;
@@ -39,7 +37,7 @@ public class SVMWithBalancedData {
 
         SVMWithBalancedData wekaTestDB = new SVMWithBalancedData();
         try {
-           //wekaTestDB.saveTrainingDataToFileHybridSampling3();
+          wekaTestDB.saveTrainingDataToFileUpSamplingWithSMOTE();
           wekaTestDB.testCrossValidataion();
 
         } catch (Exception e) {
@@ -260,10 +258,12 @@ public class SVMWithBalancedData {
         System.out.println("Number of Attributes after stop words removal- " + dataFiltered.numAttributes());
         System.out.println("\n\nFiltered data:\n\n" + dataFiltered);
 
-
+        Random r =new Random();
+        dataFiltered.randomize(r);
+        
         ArffSaver saver = new ArffSaver();
         saver.setInstances(dataFiltered);
-        saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingDataDS.arff"));
+        saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingDataDSRandom.arff"));
         saver.writeBatch();
     }
 
@@ -402,10 +402,12 @@ public class SVMWithBalancedData {
         System.out.println("Number of Attributes after stop words removal- " + dataFiltered.numAttributes());
         System.out.println("\n\nFiltered data:\n\n" + dataFiltered);
 
+        Random r =new Random();
+        dataFiltered.randomize(r);
 
         ArffSaver saver = new ArffSaver();
         saver.setInstances(dataFiltered);
-        saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingDataUS.arff"));
+        saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingDataUSRandom.arff"));
         saver.writeBatch();
     }
 
@@ -558,10 +560,13 @@ public class SVMWithBalancedData {
         // Specifies percentage of SMOTE instances to create.
         s.setPercentage(464.0);
         Instances dataBalanced = Filter.useFilter(dataFiltered, s);
+        
+        Random r =new Random();
+        dataBalanced.randomize(r);
 
         ArffSaver saver = new ArffSaver();
         saver.setInstances(dataBalanced);
-        saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingDataUSSMOTE464.arff"));
+        saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingDataUSSMOTE464Random.arff"));
         saver.writeBatch();
     }
 
@@ -716,10 +721,13 @@ public class SVMWithBalancedData {
         // Specifies percentage of SMOTE instances to create.
         s.setPercentage(300.0);//464
         Instances dataBalanced = Filter.useFilter(dataFiltered, s);
+        
+        Random r =new Random();
+        dataBalanced.randomize(r);
 
         ArffSaver saver = new ArffSaver();
         saver.setInstances(dataBalanced);
-        saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingDataHybrid.arff"));
+        saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingDataHybridRandom.arff"));
         saver.writeBatch();
     }
 
@@ -812,7 +820,7 @@ public class SVMWithBalancedData {
         Instances dataBalanced = Filter.useFilter(dataFiltered, s);
         dataBalanced.randomize(r);
         saver.setInstances(dataBalanced);
-        saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingDataHybrid5.arff"));
+        saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingDataHybrid5Random.arff"));
         saver.writeBatch();
         
         
