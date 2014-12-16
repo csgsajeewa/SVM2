@@ -80,4 +80,9 @@ public class StanfordCoreNLPLemmatizer implements Stemmer, OptionHandler {
         return (String[])result.toArray(new String[result.size()]);
 
     }
+    public static void main(String[] args) {
+        StanfordCoreNLPLemmatizer scnlpl=new StanfordCoreNLPLemmatizer();
+        System.out.println(scnlpl.stem("aggrieved"));
+        
+    }
 }
