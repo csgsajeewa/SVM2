@@ -1,55 +1,46 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package svm2;
 
-import java.awt.BorderLayout;
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.LibSVM;
 import weka.core.Instances;
 import weka.core.stemmers.SnowballStemmer;
 import weka.core.tokenizers.NGramTokenizer;
-import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.StringToWordVector;
-
 import java.io.File;
 import java.util.Random;
-import javax.swing.JFrame;
-import weka.classifiers.evaluation.ThresholdCurve;
 import weka.classifiers.meta.FilteredClassifier;
-import weka.classifiers.meta.GridSearch;
 import weka.core.Attribute;
 import weka.core.FastVector;
 import weka.core.Instance;
-import weka.core.SelectedTag;
-import weka.core.Tag;
-import weka.core.Utils;
-import weka.core.converters.ArffSaver;
-import weka.core.converters.ConverterUtils;
 import weka.experiment.InstanceQuery;
-import weka.filters.AllFilter;
-import weka.gui.visualize.PlotData2D;
-import weka.gui.visualize.ThresholdVisualizePanel;
 
+/**
+ * use filtered classifier
+ *
+ * @author chamath
+ */
 public class SVMWithFilterClassifier {
 
     public static void main(String[] args) {
 
-        SVMWithFilterClassifier wekaTestDB = new SVMWithFilterClassifier();
+        SVMWithFilterClassifier svm = new SVMWithFilterClassifier();
         try {
-            wekaTestDB.testCrossValidataion();
+            System.out.println("---------------------------");
+            System.out.println("SVM with Filterd Classifier");
+            System.out.println("---------------------------");
+            svm.run();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
 
-    public void testCrossValidataion() throws Exception {
-        System.out.println("-----------------------------------------");
-        System.out.println("Filtered Classifier");
-        System.out.println("------------------------------------------");
-        
+    /**
+     *
+     * @throws Exception
+     */
+    public void run() throws Exception {
+
         //set tokenizer - we can specify n-grams for classification
         NGramTokenizer tokenizer = new NGramTokenizer();
         tokenizer.setNGramMinSize(1);
@@ -91,7 +82,7 @@ public class SVMWithFilterClassifier {
 
         query.setQuery("SELECT content, label FROM article_the_island_2012 where `label` IS NOT NULL");
         instances[3] = query.retrieveInstances();
-        
+
         query.setQuery("SELECT content, label FROM article_the_island_2013 where `label` IS NOT NULL");
         instances[4] = query.retrieveInstances();
 
@@ -127,7 +118,7 @@ public class SVMWithFilterClassifier {
             System.out.println("Num of articles in " + k + " " + instances[k].numInstances());
         }
         System.out.println("Total Num of Insatances= " + count);
-        
+
         System.out.println("-------------------------------------------------");
         System.out.println("Running LIBSVM with FC");
         System.out.println("---------------------------------------------------");
@@ -141,8 +132,18 @@ public class SVMWithFilterClassifier {
         FilteredClassifier fc = new FilteredClassifier();
         fc.setClassifier(svm);
         fc.setFilter(filter);
+        evaluate(trainingData, fc);
 
+    }
 
+    /**
+     * evaluate classifier
+     *
+     * @param trainingData
+     * @param fc
+     * @throws Exception
+     */
+    private void evaluate(Instances trainingData, FilteredClassifier fc) throws Exception {
         Evaluation evaluation = new Evaluation(trainingData);
         evaluation.crossValidateModel(fc, trainingData, 10, new Random(1));
         System.out.println(evaluation.toSummaryString());
@@ -156,11 +157,5 @@ public class SVMWithFilterClassifier {
         }
         System.out.println("accuracy for crime class= " + (confusionMatrix[0][0] / (confusionMatrix[0][1] + confusionMatrix[0][0])) * 100 + "%");
         System.out.println("accuracy for other class= " + (confusionMatrix[1][1] / (confusionMatrix[1][1] + confusionMatrix[1][0])) * 100 + "%");
-
-
-
     }
-
-    
-
 }
