@@ -1,25 +1,16 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package svm2;
 
 import gate.DocumentKeyWordFinder;
-import java.io.File;
 import weka.core.Attribute;
 import weka.core.FastVector;
-import weka.core.Instance;
 import weka.core.Instances;
-import weka.core.converters.ArffSaver;
-import weka.core.stemmers.SnowballStemmer;
 import weka.core.tokenizers.NGramTokenizer;
 import weka.experiment.InstanceQuery;
-import weka.filters.Filter;
-import weka.filters.unsupervised.attribute.StringToWordVector;
 
 /**
+ * SVM with Gate Gazetter
  *
- * @author hp
+ * @author chamath
  */
 public class SVMWithGateGazetter {
 
@@ -36,6 +27,10 @@ public class SVMWithGateGazetter {
         scnlpl = new StanfordCoreNLPLemmatizer();
     }
 
+    /**
+     *
+     * @throws Exception
+     */
     private void run() throws Exception {
 
         InstanceQuery query = new InstanceQuery();
@@ -69,19 +64,15 @@ public class SVMWithGateGazetter {
 
         query.setQuery("SELECT content, label FROM article_daily_mirror_2012 where `label` ='crime'");
         crimeArticles[1] = query.retrieveInstances();
-//
+
         query.setQuery("SELECT content, label FROM article_daily_mirror_2013 where `label` ='crime'");
         crimeArticles[2] = query.retrieveInstances();
-//
-        //SELECT content, label FROM article_the_island_2012 where `label` IS NOT NULL
+
         query.setQuery("SELECT content, label FROM article_the_island_2012 where `label` = 'crime'");
         crimeArticles[3] = query.retrieveInstances();
 
         query.setQuery("SELECT content, label FROM article_the_island_2013 where `label` = 'crime'");
         crimeArticles[4] = query.retrieveInstances();
-
-
-
 
         FastVector attributeList = new FastVector(2);
         Attribute a1 = new Attribute("text", (FastVector) null);
@@ -95,13 +86,12 @@ public class SVMWithGateGazetter {
         Instances trainingData = new Instances("TrainingNews", attributeList, 0);
         trainingData.setClassIndex(1);
 
-
         int crimeArticlesCount = 0;
         int numCrimeCorrect = 0;
         int numCrimeWrong = 0;
         int numOtherCorrect = 0;
         int numOtherWrong = 0;
-        
+
         for (int i = 0; i < numberOfPapers; i++) {
             for (int j = 0; j < crimeArticles[i].numInstances(); j++) {
                 words = "";
@@ -112,15 +102,15 @@ public class SVMWithGateGazetter {
                     words = words.concat(scnlpl.stem(element));
                     words = words.concat(" ");
                 }
-                
+
                 exist = documentKeyWordFinder.isKeyWordExist(words);
                 if (exist) {
-                 //   System.out.println("crime- Correct");
-                  //  System.out.println("Sentence= "+words);
+                    System.out.println("crime- Correct");
+                    System.out.println("Sentence= " + words);
                     numCrimeCorrect++;
                 } else {
                     System.out.println("crime- Incorrect");
-                    System.out.println("Sentence= "+words);
+                    System.out.println("Sentence= " + words);
                     numCrimeWrong++;
                 }
 
@@ -131,7 +121,6 @@ public class SVMWithGateGazetter {
         }
 
         System.out.println("Total Number of Crime Instances: " + crimeArticlesCount);
-
 
         int otherArticlesCount = 0;
         for (int i = 0; i < numberOfPapers; i++) {
@@ -144,15 +133,14 @@ public class SVMWithGateGazetter {
                     words = words.concat(scnlpl.stem(element));
                     words = words.concat(" ");
                 }
-               
                 exist = documentKeyWordFinder.isKeyWordExist(words);
                 if (exist) {
-                    System.out.println("Sentence= "+words);
+                    System.out.println("Sentence= " + words);
                     System.out.println("Other-Incorrect");
                     numOtherWrong++;
                 } else {
-                   // System.out.println("Other-Correct");
-                   // System.out.println("Sentence= "+words);
+                    System.out.println("Other-Correct");
+                    System.out.println("Sentence= " + words);
                     numOtherCorrect++;
                 }
                 otherArticlesCount++;
@@ -163,16 +151,20 @@ public class SVMWithGateGazetter {
         System.out.println("Total Number of Other Instances: " + otherArticlesCount);
 
         System.out.println("Total num of instances= " + trainingData.numInstances());
-        System.out.println("Total num of correct crime= "+ numCrimeCorrect);
-        System.out.println("Total num of incorrect crime= "+ numCrimeWrong);
-        System.out.println("Total num of correct other= "+ numOtherCorrect);
-        System.out.println("Total num of incorrect other= "+ numOtherWrong);
+        System.out.println("Total num of correct crime= " + numCrimeCorrect);
+        System.out.println("Total num of incorrect crime= " + numCrimeWrong);
+        System.out.println("Total num of correct other= " + numOtherCorrect);
+        System.out.println("Total num of incorrect other= " + numOtherWrong);
+
+
 
     }
-    
+
     public static void main(String[] args) throws Exception {
-        System.out.println("SVM with Gate Gazetter");
-        SVMWithGateGazetter sVMWithGateGazetter=new SVMWithGateGazetter();
+        System.out.println("-------------------------------------------------");
+        System.out.println("Running LIBSVM With Gate Gazetter");
+        System.out.println("-------------------------------------------------");
+        SVMWithGateGazetter sVMWithGateGazetter = new SVMWithGateGazetter();
         sVMWithGateGazetter.run();
     }
 }
