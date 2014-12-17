@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package svm2;
 
 import weka.classifiers.Evaluation;
@@ -27,6 +23,11 @@ import weka.experiment.InstanceQuery;
 import weka.filters.AllFilter;
 import weka.filters.supervised.instance.SMOTE;
 
+/**
+ * use combination of up sampling and down sampling method
+ *
+ * @author chamath
+ */
 public class SVMWithBalancedData {
 
     public static void main(String[] args) {
@@ -35,10 +36,10 @@ public class SVMWithBalancedData {
         System.out.println("Running LIBSVM with balanced data");
         System.out.println("---------------------------------------------------");
 
-        SVMWithBalancedData wekaTestDB = new SVMWithBalancedData();
+        SVMWithBalancedData svm = new SVMWithBalancedData();
         try {
-          wekaTestDB.saveTrainingDataToFileUpSamplingWithSMOTE();
-          wekaTestDB.testCrossValidataion();
+            //svm.saveTrainingDataToFileUpSamplingWithSMOTE();
+            svm.run();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -46,23 +47,28 @@ public class SVMWithBalancedData {
 
     }
 
-    public void testCrossValidataion() throws Exception {
+    /**
+     * run svm under given conditions
+     *
+     * @throws Exception
+     */
+    public void run() throws Exception {
 
 
         LibSVM svm = new LibSVM();
-        String svmOptions = "-S 0 -K 2 -C 2 -G 0.0078125"; //Final result: [1, -7 for saveTrainingDataToFileHybridSampling2 ]
+        String svmOptions = "-S 0 -K 2 -C 8 -G 0"; //Final result: [1, -7 for saveTrainingDataToFileHybridSampling2 ]
         svm.setOptions(weka.core.Utils.splitOptions(svmOptions));
         System.out.println("SVM Type and Keranl Type= " + svm.getSVMType() + svm.getKernelType());//1,3 best result 81%
         //     svm.setNormalize(true);
 
 
 //      load training data from .arff file
-        ConverterUtils.DataSource source = new ConverterUtils.DataSource("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingDataHybrid8.arff");
+        ConverterUtils.DataSource source = new ConverterUtils.DataSource("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingDataUSSMOTE464Random.arff");
         System.out.println("\n\nLoaded data:\n\n" + source.getDataSet());
         Instances dataFiltered = source.getDataSet();
         dataFiltered.setClassIndex(0);
 
-      //  gridSearch(svm, dataFiltered);
+        //  gridSearch(svm, dataFiltered);
         Evaluation evaluation = new Evaluation(dataFiltered);
         evaluation.crossValidateModel(svm, dataFiltered, 10, new Random(1));
         System.out.println(evaluation.toSummaryString());
@@ -84,6 +90,7 @@ public class SVMWithBalancedData {
     }
 
     /**
+     * search for best cost and gamma values
      *
      * @param svm
      * @param dataFiltered
@@ -113,7 +120,7 @@ public class SVMWithBalancedData {
 
         int waucIndex = 6;
         SelectedTag st;
-        st = new SelectedTag(waucIndex , weka.classifiers.meta.GridSearch.TAGS_EVALUATION);
+        st = new SelectedTag(waucIndex, weka.classifiers.meta.GridSearch.TAGS_EVALUATION);
         gs.setEvaluation(st);
         //newly added
         gs.setGridIsExtendable(true);
@@ -125,6 +132,11 @@ public class SVMWithBalancedData {
         System.out.println("&&&&&&&&&&&&" + gs.getValues());
     }
 
+    /**
+     * save training data after random down sampling the data
+     *
+     * @throws Exception
+     */
     public void saveTrainingDataToFileDownSampling() throws Exception {
         //set tokenizer - we can specify n-grams for classification
         NGramTokenizer tokenizer = new NGramTokenizer();
@@ -141,19 +153,14 @@ public class SVMWithBalancedData {
 
         //create new filter for vector transformation
         StringToWordVector filter = new StringToWordVector();
-        filter.setLowerCaseTokens(true); //ok accepted
-        filter.setOutputWordCounts(true); // ok accepted given in research papers
-        filter.setTFTransform(true); // normalization as given in scikit
-        filter.setIDFTransform(true); // normalization as given in scikit       
+        filter.setLowerCaseTokens(true);
+        filter.setOutputWordCounts(true);
+        filter.setTFTransform(true);
+        filter.setIDFTransform(true);
         filter.setStopwords(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\StopWordsR2.txt")); // stop word removal given in research paper
-        filter.setTokenizer(tokenizer); // given in research papers
-        filter.setStemmer(scnlpl); // given in research papers as stemming , here we go forward as use lemmatizer
-        // feature selection has not performed as "how to" paper say that it wont improve accuracy in SVM and our dictionary
-        // is small
-
-
+        filter.setTokenizer(tokenizer);
+        filter.setStemmer(scnlpl);
         System.out.println("Stemmer Name- " + filter.getStemmer());
-
 
         InstanceQuery query = new InstanceQuery();
         query.setUsername("root");
@@ -194,9 +201,6 @@ public class SVMWithBalancedData {
 
         query.setQuery("SELECT content, label FROM article_the_island_2013 where `label` = 'crime'");
         crimeArticles[4] = query.retrieveInstances();
-
-
-
 
         FastVector attributeList = new FastVector(2);
         Attribute a1 = new Attribute("text", (FastVector) null);
@@ -248,9 +252,7 @@ public class SVMWithBalancedData {
             }
         }
         System.out.println("Total Number of Other Instances: " + otherArticlesCount);
-
         System.out.println("Total num of instances= " + trainingData.numInstances());
-
 
         // apply the StringToWordVector filter
         filter.setInputFormat(trainingData);
@@ -258,15 +260,20 @@ public class SVMWithBalancedData {
         System.out.println("Number of Attributes after stop words removal- " + dataFiltered.numAttributes());
         System.out.println("\n\nFiltered data:\n\n" + dataFiltered);
 
-        Random r =new Random();
+        Random r = new Random();
         dataFiltered.randomize(r);
-        
+
         ArffSaver saver = new ArffSaver();
         saver.setInstances(dataFiltered);
         saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingDataDSRandom.arff"));
         saver.writeBatch();
     }
 
+    /**
+     * save training data after random up sampling data
+     *
+     * @throws Exception
+     */
     public void saveTrainingDataToFileUpSampling() throws Exception {
         //set tokenizer - we can specify n-grams for classification
         NGramTokenizer tokenizer = new NGramTokenizer();
@@ -283,19 +290,15 @@ public class SVMWithBalancedData {
 
         //create new filter for vector transformation
         StringToWordVector filter = new StringToWordVector();
-        filter.setLowerCaseTokens(true); //ok accepted
-        filter.setOutputWordCounts(true); // ok accepted given in research papers
-        filter.setTFTransform(true); // normalization as given in scikit
-        filter.setIDFTransform(true); // normalization as given in scikit       
+        filter.setLowerCaseTokens(true);
+        filter.setOutputWordCounts(true);
+        filter.setTFTransform(true);
+        filter.setIDFTransform(true);
         filter.setStopwords(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\StopWordsR2.txt")); // stop word removal given in research paper
-        filter.setTokenizer(tokenizer); // given in research papers
-        filter.setStemmer(scnlpl); // given in research papers as stemming , here we go forward as use lemmatizer
-        // feature selection has not performed as "how to" paper say that it wont improve accuracy in SVM and our dictionary
-        // is small
-
+        filter.setTokenizer(tokenizer);
+        filter.setStemmer(scnlpl);
 
         System.out.println("Stemmer Name- " + filter.getStemmer());
-
 
         InstanceQuery query = new InstanceQuery();
         query.setUsername("root");
@@ -336,9 +339,6 @@ public class SVMWithBalancedData {
 
         query.setQuery("SELECT content, label FROM article_the_island_2013 where `label` = 'crime'");
         crimeArticles[4] = query.retrieveInstances();
-
-
-
 
         FastVector attributeList = new FastVector(2);
         Attribute a1 = new Attribute("text", (FastVector) null);
@@ -392,9 +392,7 @@ public class SVMWithBalancedData {
             }
         }
         System.out.println("Total Number of Other Instances: " + otherArticlesCount);
-
         System.out.println("Total num of instances= " + trainingData.numInstances());
-
 
         // apply the StringToWordVector filter
         filter.setInputFormat(trainingData);
@@ -402,7 +400,7 @@ public class SVMWithBalancedData {
         System.out.println("Number of Attributes after stop words removal- " + dataFiltered.numAttributes());
         System.out.println("\n\nFiltered data:\n\n" + dataFiltered);
 
-        Random r =new Random();
+        Random r = new Random();
         dataFiltered.randomize(r);
 
         ArffSaver saver = new ArffSaver();
@@ -411,6 +409,11 @@ public class SVMWithBalancedData {
         saver.writeBatch();
     }
 
+    /**
+     * save training data after performing up sampling with SMOTE
+     *
+     * @throws Exception
+     */
     public void saveTrainingDataToFileUpSamplingWithSMOTE() throws Exception {
         //set tokenizer - we can specify n-grams for classification
         NGramTokenizer tokenizer = new NGramTokenizer();
@@ -427,19 +430,15 @@ public class SVMWithBalancedData {
 
         //create new filter for vector transformation
         StringToWordVector filter = new StringToWordVector();
-        filter.setLowerCaseTokens(true); //ok accepted
-        filter.setOutputWordCounts(true); // ok accepted given in research papers
-        filter.setTFTransform(true); // normalization as given in scikit
-        filter.setIDFTransform(true); // normalization as given in scikit       
-        filter.setStopwords(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\StopWordsR2.txt")); // stop word removal given in research paper
-        filter.setTokenizer(tokenizer); // given in research papers
-        filter.setStemmer(scnlpl); // given in research papers as stemming , here we go forward as use lemmatizer
-        // feature selection has not performed as "how to" paper say that it wont improve accuracy in SVM and our dictionary
-        // is small
-
+        filter.setLowerCaseTokens(true);
+        filter.setOutputWordCounts(true);
+        filter.setTFTransform(true);
+        filter.setIDFTransform(true);
+        filter.setStopwords(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\StopWordsR2.txt"));
+        filter.setTokenizer(tokenizer);
+        filter.setStemmer(scnlpl);
 
         System.out.println("Stemmer Name- " + filter.getStemmer());
-
 
         InstanceQuery query = new InstanceQuery();
         query.setUsername("root");
@@ -480,9 +479,6 @@ public class SVMWithBalancedData {
 
         query.setQuery("SELECT content, label FROM article_the_island_2013 where `label` = 'crime'");
         crimeArticles[4] = query.retrieveInstances();
-
-
-
 
         FastVector attributeList = new FastVector(2);
         Attribute a1 = new Attribute("text", (FastVector) null);
@@ -528,7 +524,6 @@ public class SVMWithBalancedData {
                 inst.setValue(c, otherArticles[i].instance(j).stringValue(1));
                 inst.setDataset(trainingData);
 
-
                 System.out.println(inst);
                 trainingData.add(inst);
                 otherArticlesCount++;
@@ -542,7 +537,6 @@ public class SVMWithBalancedData {
 ////            }
         }
         System.out.println("Total Number of Other Instances: " + otherArticlesCount);
-
         System.out.println("Total num of instances= " + trainingData.numInstances());
 
 
@@ -552,16 +546,20 @@ public class SVMWithBalancedData {
         System.out.println("Number of Attributes after stop words removal- " + dataFiltered.numAttributes());
         System.out.println("\n\nFiltered data:\n\n" + dataFiltered);
 
-        //Resamples a dataset by applying the Synthetic Minority Oversampling TEchnique (SMOTE)
-        //http://www.cs.cmu.edu/afs/cs/project/jair/pub/volume16/chawla02a-html/node6.html
-        //http://weka.sourceforge.net/doc.packages/SMOTE/weka/filters/supervised/instance/SMOTE.html
+        /**
+         * Resamples a dataset by applying the Synthetic Minority Oversampling
+         * TEchnique (SMOTE)
+         * http://www.cs.cmu.edu/afs/cs/project/jair/pub/volume16/chawla02a-html/node6.html
+         * http://weka.sourceforge.net/doc.packages/SMOTE/weka/filters/supervised/instance/SMOTE.html 
+         *
+         */
         SMOTE s = new SMOTE();
         s.setInputFormat(dataFiltered);
         // Specifies percentage of SMOTE instances to create.
         s.setPercentage(464.0);
         Instances dataBalanced = Filter.useFilter(dataFiltered, s);
-        
-        Random r =new Random();
+
+        Random r = new Random();
         dataBalanced.randomize(r);
 
         ArffSaver saver = new ArffSaver();
@@ -586,26 +584,21 @@ public class SVMWithBalancedData {
 
         //create new filter for vector transformation
         StringToWordVector filter = new StringToWordVector();
-        filter.setLowerCaseTokens(true); //ok accepted
-        filter.setOutputWordCounts(true); // ok accepted given in research papers
-        filter.setTFTransform(true); // normalization as given in scikit
-        filter.setIDFTransform(true); // normalization as given in scikit       
+        filter.setLowerCaseTokens(true);
+        filter.setOutputWordCounts(true);
+        filter.setTFTransform(true);
+        filter.setIDFTransform(true);
         filter.setStopwords(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\StopWordsR2.txt")); // stop word removal given in research paper
-        filter.setTokenizer(tokenizer); // given in research papers
-        filter.setStemmer(scnlpl); // given in research papers as stemming , here we go forward as use lemmatizer
-        // feature selection has not performed as "how to" paper say that it wont improve accuracy in SVM and our dictionary
-        // is small
-
+        filter.setTokenizer(tokenizer);
+        filter.setStemmer(scnlpl);
 
         System.out.println("Stemmer Name- " + filter.getStemmer());
-
 
         InstanceQuery query = new InstanceQuery();
         query.setUsername("root");
         query.setPassword("");
 
         int numberOfPapers = 5;
-
         Instances[] otherArticles = new Instances[numberOfPapers];
         query.setQuery("SELECT content, label FROM article_ceylon_today_2013 where `label` = 'other'");
         otherArticles[0] = query.retrieveInstances();
@@ -616,7 +609,6 @@ public class SVMWithBalancedData {
         query.setQuery("SELECT content, label FROM article_daily_mirror_2013 where `label` ='other'");
         otherArticles[2] = query.retrieveInstances();
 
-        //SELECT content, label FROM article_the_island_2012 where `label` IS NOT NULL
         query.setQuery("SELECT content, label FROM article_the_island_2012 where `label` = 'other'");
         otherArticles[3] = query.retrieveInstances();
 
@@ -633,15 +625,11 @@ public class SVMWithBalancedData {
         query.setQuery("SELECT content, label FROM article_daily_mirror_2013 where `label` ='crime'");
         crimeArticles[2] = query.retrieveInstances();
 
-        //SELECT content, label FROM article_the_island_2012 where `label` IS NOT NULL
         query.setQuery("SELECT content, label FROM article_the_island_2012 where `label` = 'crime'");
         crimeArticles[3] = query.retrieveInstances();
 
         query.setQuery("SELECT content, label FROM article_the_island_2013 where `label` = 'crime'");
         crimeArticles[4] = query.retrieveInstances();
-
-
-
 
         FastVector attributeList = new FastVector(2);
         Attribute a1 = new Attribute("text", (FastVector) null);
@@ -688,8 +676,6 @@ public class SVMWithBalancedData {
                 inst.setValue(a1, otherArticles[i].instance(j).stringValue(0));
                 inst.setValue(c, otherArticles[i].instance(j).stringValue(1));
                 inst.setDataset(trainingData);
-
-
                 System.out.println(inst);
                 trainingData.add(inst);
                 otherArticlesCount++;
@@ -703,9 +689,7 @@ public class SVMWithBalancedData {
             }
         }
         System.out.println("Total Number of Other Instances: " + otherArticlesCount);
-
         System.out.println("Total num of instances= " + trainingData.numInstances());
-
 
         // apply the StringToWordVector filter
         filter.setInputFormat(trainingData);
@@ -713,16 +697,20 @@ public class SVMWithBalancedData {
         System.out.println("Number of Attributes after stop words removal- " + dataFiltered.numAttributes());
         System.out.println("\n\nFiltered data:\n\n" + dataFiltered);
 
-        //Resamples a dataset by applying the Synthetic Minority Oversampling TEchnique (SMOTE)
-        //http://www.cs.cmu.edu/afs/cs/project/jair/pub/volume16/chawla02a-html/node6.html
-        //http://weka.sourceforge.net/doc.packages/SMOTE/weka/filters/supervised/instance/SMOTE.html
+        /**
+         * Resamples a dataset by applying the Synthetic Minority Oversampling
+         * TEchnique (SMOTE)
+         * http://www.cs.cmu.edu/afs/cs/project/jair/pub/volume16/chawla02a-html/node6.html
+         * http://weka.sourceforge.net/doc.packages/SMOTE/weka/filters/supervised/instance/SMOTE.html 
+         *
+         */
         SMOTE s = new SMOTE();
         s.setInputFormat(dataFiltered);
         // Specifies percentage of SMOTE instances to create.
         s.setPercentage(300.0);//464
         Instances dataBalanced = Filter.useFilter(dataFiltered, s);
-        
-        Random r =new Random();
+
+        Random r = new Random();
         dataBalanced.randomize(r);
 
         ArffSaver saver = new ArffSaver();
@@ -732,13 +720,12 @@ public class SVMWithBalancedData {
     }
 
     public void saveTrainingDataToFileHybridSampling2() throws Exception {
-        
+
         ConverterUtils.DataSource source = new ConverterUtils.DataSource("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingPreDataHybrid2.arff");
         System.out.println("\n\nLoaded data:\n\n" + source.getDataSet());
         Instances dataFiltered = source.getDataSet();
         dataFiltered.setClassIndex(0);
-        
-        
+
         //train SVM to find most informative instances in majority class
         LibSVMUpdated libSVM = new LibSVMUpdated();
         String svmOptions = "-S 0 -K 2 -C 8 -G 0.001953125 -W 10 1"; //-C 3 -G 0.001953125"
@@ -749,70 +736,62 @@ public class SVMWithBalancedData {
 
         svm_model svmModel = libSVM.getSVMModel();
         int n[] = svmModel.sv_indices;
-       
+
         for (int i = 0; i < n.length; i++) {
             System.out.println(n[i]);
         }
         System.out.println("Number of support vectors=" + n.length);
+        svm.svm_save_model("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\tt", svmModel);
 
-        svm.svm_save_model("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\tt", svmModel);        
-//        ////
-     
         int otherCount = 0;
         int crimeCount = 0;
-        Instances otherClassSupportVectors=new Instances(dataFiltered); //other class support vectors
+        Instances otherClassSupportVectors = new Instances(dataFiltered); //other class support vectors
         otherClassSupportVectors.delete();
-        
-              
+
         for (int k = 0; k < n.length; k++) {
             Instance i = dataFiltered.instance(n[k] - 1);
             System.out.println(n[k] - 1 + " " + i.classValue());
             if (i.classValue() == 0.0) {
                 crimeCount++;
-            }
-            else if (i.classValue() == 1.0) {
+            } else if (i.classValue() == 1.0) {
                 otherCount++;
                 otherClassSupportVectors.add(i);
             }
-            
-        }
-        System.out.println("Crime COunt "+crimeCount);
-        System.out.println("Other Count "+otherCount);
 
-        
+        }
+        System.out.println("Crime COunt " + crimeCount);
+        System.out.println("Other Count " + otherCount);
+
         ArffSaver saver = new ArffSaver();
         saver.setInstances(otherClassSupportVectors);
         saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\otherClassSupportVectors.arff"));
         saver.writeBatch();
-        
-        Instances crimeClassInstances=new Instances(dataFiltered); // crime all instances
+
+        Instances crimeClassInstances = new Instances(dataFiltered); // crime all instances
         crimeClassInstances.delete();
-        for(int i=0;i<dataFiltered.numInstances();i++){
-           
-            Instance instance =dataFiltered.instance(i);
-            if(instance.classValue()==0.0){
+        for (int i = 0; i < dataFiltered.numInstances(); i++) {
+
+            Instance instance = dataFiltered.instance(i);
+            if (instance.classValue() == 0.0) {
                 crimeClassInstances.add(instance);
             }
-            
-            
         }
-        
-        
+
         saver.setInstances(crimeClassInstances);
         saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingDataHybrid3.arff"));
         saver.writeBatch();
-        
-        for(int j=0;j<crimeClassInstances.numInstances();j++){
+
+        for (int j = 0; j < crimeClassInstances.numInstances(); j++) {
             otherClassSupportVectors.add(crimeClassInstances.instance(j));
         }
-        
-        dataFiltered=otherClassSupportVectors;
-        Random r =new Random();
+
+        dataFiltered = otherClassSupportVectors;
+        Random r = new Random();
         dataFiltered.randomize(r);
         saver.setInstances(dataFiltered);
         saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingDataHybrid4.arff"));
         saver.writeBatch();
-        
+
         SMOTE s = new SMOTE();
         s.setInputFormat(dataFiltered);
         // Specifies percentage of SMOTE instances to create.
@@ -822,20 +801,16 @@ public class SVMWithBalancedData {
         saver.setInstances(dataBalanced);
         saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingDataHybrid5Random.arff"));
         saver.writeBatch();
-        
-        
-        
-        
+
     }
-    
+
     public void saveTrainingDataToFileHybridSampling3() throws Exception {
-        
+
         ConverterUtils.DataSource source = new ConverterUtils.DataSource("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingPreDataHybrid2.arff");
         System.out.println("\n\nLoaded data:\n\n" + source.getDataSet());
         Instances dataFiltered = source.getDataSet();
         dataFiltered.setClassIndex(0);
-        
-        
+
         //train SVM to find most informative instances in majority class
         LibSVMUpdated libSVM = new LibSVMUpdated();
         String svmOptions = "-S 0 -K 2 -C 8 -G 0.001953125 -W 10 1"; //-C 3 -G 0.001953125"
@@ -846,63 +821,58 @@ public class SVMWithBalancedData {
 
         svm_model svmModel = libSVM.getSVMModel();
         int n[] = svmModel.sv_indices;
-       
+
         for (int i = 0; i < n.length; i++) {
             System.out.println(n[i]);
         }
         System.out.println("Number of support vectors=" + n.length);
 
-        svm.svm_save_model("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\tt", svmModel);        
-//        ////
-     
+        svm.svm_save_model("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\tt", svmModel);
+
         int otherCount = 0;
         int crimeCount = 0;
-        Instances otherClassSupportVectors=new Instances(dataFiltered); //other class support vectors
+        Instances otherClassSupportVectors = new Instances(dataFiltered); //other class support vectors
         otherClassSupportVectors.delete();
-        
-        Instances crimeClassSupportVectors=new Instances(dataFiltered); //other class support vectors
+
+        Instances crimeClassSupportVectors = new Instances(dataFiltered); //other class support vectors
         crimeClassSupportVectors.delete();
-        
-        
+
         for (int k = 0; k < n.length; k++) {
             Instance i = dataFiltered.instance(n[k] - 1);
             System.out.println(n[k] - 1 + " " + i.classValue());
             if (i.classValue() == 0.0) {
                 crimeCount++;
                 crimeClassSupportVectors.add(i);
-            }
-            else if (i.classValue() == 1.0) {
+            } else if (i.classValue() == 1.0) {
                 otherCount++;
                 otherClassSupportVectors.add(i);
             }
-            
-        }
-        System.out.println("Crime COunt "+crimeCount);
-        System.out.println("Other Count "+otherCount);
 
-        
+        }
+        System.out.println("Crime COunt " + crimeCount);
+        System.out.println("Other Count " + otherCount);
+
+
         ArffSaver saver = new ArffSaver();
         saver.setInstances(otherClassSupportVectors);
         saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\otherClassSupportVectors1.arff"));
         saver.writeBatch();
-        
-        
+
         saver.setInstances(crimeClassSupportVectors);
         saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\crimeClassSupportVectors2.arff"));
         saver.writeBatch();
-        
-        
-        for(int j=0;j<crimeClassSupportVectors.numInstances();j++){
+
+        for (int j = 0; j < crimeClassSupportVectors.numInstances(); j++) {
             otherClassSupportVectors.add(crimeClassSupportVectors.instance(j));
         }
-        
-        dataFiltered=otherClassSupportVectors;
-        Random r =new Random();
+
+        dataFiltered = otherClassSupportVectors;
+        Random r = new Random();
         dataFiltered.randomize(r);
         saver.setInstances(dataFiltered);
         saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingDataHybrid7.arff"));
         saver.writeBatch();
-        
+
         SMOTE s = new SMOTE();
         s.setInputFormat(dataFiltered);
         // Specifies percentage of SMOTE instances to create.
@@ -912,16 +882,11 @@ public class SVMWithBalancedData {
         saver.setInstances(dataBalanced);
         saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingDataHybrid8.arff"));
         saver.writeBatch();
-        
-        
-        
-        
+
     }
-    
-    
-    
-    private void saveToFile() throws Exception{
-         //set tokenizer - we can specify n-grams for classification
+
+    private void saveToFile() throws Exception {
+        //set tokenizer - we can specify n-grams for classification
         NGramTokenizer tokenizer = new NGramTokenizer();
         tokenizer.setNGramMinSize(1);
         tokenizer.setNGramMaxSize(1);
@@ -1005,7 +970,7 @@ public class SVMWithBalancedData {
         Instances trainingData = new Instances("TrainingNews", attributeList, 0);
         trainingData.setClassIndex(1);
 
-        
+
         int crimeArticlesCount = 0;
         for (int i = 0; i < numberOfPapers; i++) {
             for (int j = 0; j < crimeArticles[i].numInstances(); j++) {
@@ -1026,7 +991,7 @@ public class SVMWithBalancedData {
 
         System.out.println("Total Number of Crime Instances: " + crimeArticlesCount);
 
-       
+
         int otherArticlesCount = 0;
         for (int i = 0; i < numberOfPapers; i++) {
             for (int j = 0; j < otherArticles[i].numInstances(); j++) {
@@ -1053,7 +1018,7 @@ public class SVMWithBalancedData {
         System.out.println("Number of Attributes after stop words removal- " + dataFiltered.numAttributes());
         //System.out.println("\n\nFiltered data:\n\n" + dataFiltered);
         System.out.println(dataFiltered.instance(8086));
-        
+
         ArffSaver saver = new ArffSaver();
         saver.setInstances(dataFiltered);
         saver.setFile(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\balancedTrainingPreDataHybrid2.arff"));
