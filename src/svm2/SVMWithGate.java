@@ -11,7 +11,6 @@ import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.SelectedTag;
-import weka.core.Tag;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.ConverterUtils;
 import weka.core.stemmers.SnowballStemmer;
