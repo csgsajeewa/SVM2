@@ -19,7 +19,7 @@ import weka.core.stemmers.Stemmer;
 
 /**
  *
- * @author hp
+ * @author chamath
  */
 public class StanfordCoreNLPLemmatizer implements Stemmer, OptionHandler {
 
@@ -33,7 +33,12 @@ public class StanfordCoreNLPLemmatizer implements Stemmer, OptionHandler {
         this.pipeline = new StanfordCoreNLP(props);
 
     }
-
+   
+    /**
+     * Convert given word into its base form
+     * @param word
+     * @return 
+     */
     @Override
     public String stem(String word) {
         List<String> lemmas = new LinkedList<String>();
