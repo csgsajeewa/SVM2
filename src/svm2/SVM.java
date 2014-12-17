@@ -48,14 +48,14 @@ public class SVM {
      */
     public void run() throws Exception {
 
-//      LibSVM --> initialize the model and set SVM type and kernal type
+        //LibSVM --> initialize the model and set SVM type and kernal type
         LibSVM svm = new LibSVM();
         String svmOptions = "-S 0 -K 2 -C 8 -G 0.001953125 -W 10 1"; //-C 3 -G 0.001953125"
         svm.setOptions(weka.core.Utils.splitOptions(svmOptions));
         System.out.println("SVM Type and Keranl Type= " + svm.getSVMType() + svm.getKernelType());//1,3 best result 81%
         svm.setNormalize(true);
 
-//      load training data from .arff file
+        //load training data from .arff file
         ConverterUtils.DataSource source = new ConverterUtils.DataSource("C:\\Users\\hp\\Desktop\\SVM implementation\\arffData\\trainingData.arff");
         System.out.println("\n\nLoaded data:\n\n" + source.getDataSet());
         Instances dataFiltered = source.getDataSet();
@@ -173,7 +173,6 @@ public class SVM {
         StringToWordVector filter = new StringToWordVector();
         filter.setLowerCaseTokens(true);
         filter.setOutputWordCounts(true);
-        //Tf–idf can be successfully used for stop-words filtering in various subject fields including text summarization and classification.
         filter.setTFTransform(true);
         filter.setIDFTransform(true);
         filter.setStopwords(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\StopWordsR4.txt"));
@@ -187,7 +186,12 @@ public class SVM {
         filter.setStemmer(scnlpl);
 
         /*
-         *If you only want to have the 100 most frequent terms, you stringToWordVector.setWordsToKeep(100). Note that this will try to keep 100 words of every class. If you do not want to keep 100 words per class, stringToWordVector.setDoNotOperateOnPerClassBasis(true). You will get slightly above 100 if there are several words with the same frequency, so the 100 is just a kind of target value.
+         *If you only want to have the 100 most frequent terms, you 
+         * stringToWordVector.setWordsToKeep(100). Note that this will try to 
+         * keep 100 words of every class. If you do not want to keep 100 words 
+         * per class, stringToWordVector.setDoNotOperateOnPerClassBasis(true). 
+         * You will get slightly above 100 if there are several words with the 
+         * same frequency, so the 100 is just a kind of target value.
          */
         filter.setWordsToKeep(200); 
         filter.setDoNotOperateOnPerClassBasis(false); 
