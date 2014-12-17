@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package svm2;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
@@ -18,6 +14,7 @@ import weka.core.OptionHandler;
 import weka.core.stemmers.Stemmer;
 
 /**
+ * Lemmatizer use as a improvement for stemmer Wrapper class for weka
  *
  * @author chamath
  */
@@ -33,11 +30,12 @@ public class StanfordCoreNLPLemmatizer implements Stemmer, OptionHandler {
         this.pipeline = new StanfordCoreNLP(props);
 
     }
-   
+
     /**
      * Convert given word into its base form
+     *
      * @param word
-     * @return 
+     * @return
      */
     @Override
     public String stem(String word) {
@@ -82,12 +80,13 @@ public class StanfordCoreNLPLemmatizer implements Stemmer, OptionHandler {
         result.add("-S");
         result.add("Stanford Core NLP");
 
-        return (String[])result.toArray(new String[result.size()]);
+        return (String[]) result.toArray(new String[result.size()]);
 
     }
+
     public static void main(String[] args) {
-        StanfordCoreNLPLemmatizer scnlpl=new StanfordCoreNLPLemmatizer();
+        StanfordCoreNLPLemmatizer scnlpl = new StanfordCoreNLPLemmatizer();
         System.out.println(scnlpl.stem("aggrieved"));
-        
+
     }
 }
