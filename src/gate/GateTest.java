@@ -1,7 +1,3 @@
-///*
-// * To change this template, choose Tools | Templates
-// * and open the template in the editor.
-// */
 package gate;
 
 import gate.annotation.AnnotationImpl;
@@ -14,8 +10,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
-import java.util.Vector;
 
+/**
+ * use to test gate functionality
+ * @author chamath
+ */
 public class GateTest {
 
     public static void main(String[] args)
@@ -32,10 +31,7 @@ public class GateTest {
             annotationsRequired.add(annotation);
         }
 
-
-
         Corpus corpus = Factory.newCorpus("StandAloneAnnie corpus"); // create corpus 
-
         File newsDirectory = new File("C:\\Users\\hp\\Desktop\\DuplicateDetetcionImplementation\\Articles");
         BufferedReader newsArticleReader;
         int i = 0;
@@ -52,7 +48,8 @@ public class GateTest {
                 news = news.concat(" ");
             }
 
-            Document doc = Factory.newDocument(news); // create new gate document
+            // create new gate document
+            Document doc = Factory.newDocument(news); 
             System.out.println(corpus.add(doc));
 
             cp.setCorpus(corpus);
@@ -111,8 +108,6 @@ public class GateTest {
             System.out.println("Article : " + i + " -----------------------------------Ends Here--------------------");
             i++;
 
-
-
         }
-    } // main
+    } 
 }

@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package gate;
 
 import gate.annotation.AnnotationImpl;
@@ -19,8 +15,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * filter the document content according to given token types
  *
- * @author hp
+ * @author chamath
  */
 public class DocumentContentFilter {
 
@@ -44,7 +41,8 @@ public class DocumentContentFilter {
             annotationsRequired.add(annotation);
         }
         try {
-            corpus = Factory.newCorpus("StandAloneAnnie corpus"); // create corpus
+            // create corpus
+            corpus = Factory.newCorpus("StandAloneAnnie corpus");
         } catch (ResourceInstantiationException ex) {
             Logger.getLogger(DocumentContentFilter.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -58,14 +56,18 @@ public class DocumentContentFilter {
         }
     }
 
+    /**
+     * get filtered content of the given document content
+     *
+     * @param content
+     * @return
+     */
     public String getFilterdContent(String content) {
         Document doc;
         String filteredContent = "";
         try {
             doc = Factory.newDocument(content); // create new gate document
             corpus.add(doc);
-
-
             cp.setCorpus(corpus);
             try {
                 cp.execute();
@@ -75,18 +77,23 @@ public class DocumentContentFilter {
             corpus.clear();
             String docXMLString = null;
             Set annotationsToWrite = new HashSet();
-            // if we want to just write out specific annotation types, we must
-            // extract the annotations into a Set
+            /**
+             * if we want to just write out specific annotation types, we must
+             * extract the annotations into a Set *
+             */
             if (annotationsRequired != null) {
-                // Create a temporary Set to hold the annotations we wish to write out
-
-                // we only extract annotations from the default (unnamed) AnnotationSet
-                // in this example
+                /**
+                 * Create a temporary Set to hold the annotations we wish to
+                 * write out // we only extract annotations from the default
+                 * (unnamed) AnnotationSet in this example *
+                 */
                 AnnotationSet defaultAnnots = doc.getAnnotations();
                 Iterator annotTypesIt = annotationsRequired.iterator();
                 while (annotTypesIt.hasNext()) {
-                    // extract all the annotations of each requested type and add them to
-                    // the temporary set
+                    /**
+                     * extract all the annotations of each requested type and
+                     * add them to the temporary set*
+                     */
                     AnnotationSet annotsOfThisType =
                             defaultAnnots.get((String) annotTypesIt.next());
                     if (annotsOfThisType != null) {
@@ -97,7 +104,7 @@ public class DocumentContentFilter {
 
             // Release the document, as it is no longer needed
             Factory.deleteResource(doc);
-            
+
             Iterator annotIt = annotationsToWrite.iterator();
             while (annotIt.hasNext()) {
                 // extract all the annotations of each requested type and add them to
@@ -107,23 +114,23 @@ public class DocumentContentFilter {
                 if (CurrentAnnot.getType().equalsIgnoreCase("Token") && (CurrentAnnot.getFeatures().get("category") == "NN" || CurrentAnnot.getFeatures().get("category") == "NNS")) {
                     //System.out.println("Noun: " + CurrentAnnot.getFeatures().get("category"));
                     //System.out.println("Noun - string: " + CurrentAnnot.getFeatures().get("string"));
-                    filteredContent=filteredContent.concat(CurrentAnnot.getFeatures().get("string").toString());
-                    filteredContent=filteredContent.concat(" ");
+                    filteredContent = filteredContent.concat(CurrentAnnot.getFeatures().get("string").toString());
+                    filteredContent = filteredContent.concat(" ");
                 } else if (CurrentAnnot.getType().equalsIgnoreCase("Token") && (CurrentAnnot.getFeatures().get("category") == "JJ" || CurrentAnnot.getFeatures().get("category") == "JJR" || CurrentAnnot.getFeatures().get("category") == "JJS")) {
                     //System.out.println("Adjective: " + CurrentAnnot.getFeatures().get("category"));
                     //System.out.println("Adjective - string: " + CurrentAnnot.getFeatures().get("string"));
-                    filteredContent=filteredContent.concat(CurrentAnnot.getFeatures().get("string").toString());
-                    filteredContent=filteredContent.concat(" ");
+                    filteredContent = filteredContent.concat(CurrentAnnot.getFeatures().get("string").toString());
+                    filteredContent = filteredContent.concat(" ");
                 } else if (CurrentAnnot.getType().equalsIgnoreCase("Token") && (CurrentAnnot.getFeatures().get("category") == "RB" || CurrentAnnot.getFeatures().get("category") == "RBR" || CurrentAnnot.getFeatures().get("category") == "RBS")) {
                     //System.out.println("Adverb: " + CurrentAnnot.getFeatures().get("category"));
                     //System.out.println("Adverb - string: " + CurrentAnnot.getFeatures().get("string"));
-                    filteredContent= filteredContent.concat(CurrentAnnot.getFeatures().get("string").toString());
-                    filteredContent=filteredContent.concat(" ");
+                    filteredContent = filteredContent.concat(CurrentAnnot.getFeatures().get("string").toString());
+                    filteredContent = filteredContent.concat(" ");
                 } else if (CurrentAnnot.getType().equalsIgnoreCase("Token") && (CurrentAnnot.getFeatures().get("category").equals("VBD") || CurrentAnnot.getFeatures().get("category") == "VBG" || CurrentAnnot.getFeatures().get("category") == "VBN" || CurrentAnnot.getFeatures().get("category") == "VBP" || CurrentAnnot.getFeatures().get("category") == "VB" || CurrentAnnot.getFeatures().get("category") == "VBZ")) {
                     //System.out.println("Verb: " + CurrentAnnot.getFeatures().get("category"));
                     //System.out.println("Verb - string: " + CurrentAnnot.getFeatures().get("string"));
-                    filteredContent=filteredContent.concat(CurrentAnnot.getFeatures().get("string").toString());
-                    filteredContent=filteredContent.concat(" ");
+                    filteredContent = filteredContent.concat(CurrentAnnot.getFeatures().get("string").toString());
+                    filteredContent = filteredContent.concat(" ");
                 }
             }
 
