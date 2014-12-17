@@ -1,6 +1,3 @@
-/**
- * 
- */
 package src.simhash;
 
 import java.util.ArrayList;

@@ -11,6 +11,7 @@ import svm2.StanfordCoreNLPLemmatizer;
 
 /**
  * calculate 64 bit sim hash for each document representation
+ *
  * @author chamath
  */
 public class Simhash {
@@ -53,20 +54,21 @@ public class Simhash {
     public long simhash64(String doc) throws FileNotFoundException, IOException {
         int bitLen = 64;
         int[] bits = new int[bitLen];
-        
-        /**here it get tokens from its tokenisation implementation, instead we 
-         * can take requried tokens from the weka after applying stop words, 
-         * stemming, case folding, pharse detection **/
-       
+
+        /**
+         * here it get tokens from its tokenisation implementation, instead we
+         * can take requried tokens from the weka after applying stop words,
+         * stemming, case folding, pharse detection *
+         */
         // get stop word list
         ArrayList<String> stopWords = buildStopWordList();
         // get tokens after removing stop words
-        List<String> tokens = wordSeg.tokenizer(doc, stopWords); 
+        List<String> tokens = wordSeg.tokenizer(doc, stopWords);
         //for each token in string 
         for (String t : tokens) {
             //calculate 64 bit hash value for each token
             //case folding
-            t = t.toLowerCase(); 
+            t = t.toLowerCase();
             StanfordCoreNLPLemmatizer scnlpl = new StanfordCoreNLPLemmatizer();
             t = scnlpl.stem(t);
             long v = MurmurHash.hash64(t);
@@ -90,9 +92,9 @@ public class Simhash {
     }
 
     /**
-     * 
+     *
      * @param doc
-     * @return 
+     * @return
      */
     public long simhash32(String doc) {
         int bitLen = 32;
@@ -121,9 +123,10 @@ public class Simhash {
 
     /**
      * build stop word list to remove unnecessary words from documents
+     *
      * @return
      * @throws FileNotFoundException
-     * @throws IOException 
+     * @throws IOException
      */
     private ArrayList<String> buildStopWordList() throws FileNotFoundException, IOException {
         BufferedReader br = new BufferedReader(new FileReader(new File("C:\\Users\\hp\\Desktop\\SVM implementation\\stopWords.txt")));
